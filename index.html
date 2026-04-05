@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PQ Login | Authentication for the Post-Quantum</title>
+  <meta name="description" content="PQ Login is the drop-in authentication layer secured by post-quantum cryptography — protecting every login, session, and identity against the quantum threat, today." />
+  <meta name="keywords" content="post-quantum login, quantum-safe authentication, PQC login, quantum resistant MFA, post quantum SSO, quantum safe identity, NIST PQC authentication" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="PQ Login — Authentication for the Post-Quantum World" />
+  <meta property="og:description" content="Every password will be broken. Every token will be forged. Unless you migrate to PQ Login." />
+  <meta property="og:url" content="https://pqlogin.com" />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href="https://pqlogin.com" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --white:        #f4f5ff;
+      --offwhite:     #ecedf8;
+      --cloud:        #dddff2;
+      --mist:         #b8bae0;
+      --indigo:       #4338ca;
+      --indigo-bright:#5b50e8;
+      --indigo-dim:   #312e81;
+      --indigo-glow:  rgba(67,56,202,0.12);
+      --void:         #08080f;
+      --dark:         #0e0e1a;
+      --panel:        #13131f;
+      --text-primary: #0e0e1a;
+      --text-muted:   #52527a;
+      --text-soft:    #8888aa;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--white);
+      color: var(--text-primary);
+      overflow-x: hidden;
+    }
+
+    /* ── BANNER ── */
+    #offer-banner {
+      background: var(--void);
+      color: rgba(244,245,255,0.48);
+      text-align: center;
+      padding: 0.6rem 1.5rem;
+      font-size: 0.76rem; letter-spacing: 0.03em; line-height: 1.5;
+      position: relative; z-index: 200;
+    }
+    #offer-banner a {
+      color: #a5b4fc; text-decoration: none; font-weight: 500;
+      border-bottom: 1px solid rgba(165,180,252,0.3);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    #offer-banner a:hover { color: #c4b5fd; border-color: #c4b5fd; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.2rem 4rem;
+      background: rgba(244,245,255,0.93);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(180,182,220,0.35);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(244,245,255,0.99);
+      box-shadow: 0 1px 20px rgba(14,14,26,0.08);
+    }
+    .nav-logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.15rem; font-weight: 700;
+      letter-spacing: -0.01em; color: var(--text-primary);
+      text-decoration: none; flex-shrink: 0;
+    }
+    .nav-logo .pq { color: var(--indigo-bright); }
+
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.78rem; font-weight: 400;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--text-muted); text-decoration: none; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text-primary); }
+
+    .nav-cta {
+      font-size: 0.76rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--white); background: var(--indigo);
+      border: none; padding: 0.62rem 1.4rem; border-radius: 4px;
+      cursor: pointer; text-decoration: none; white-space: nowrap;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .nav-cta:hover {
+      background: var(--indigo-bright); transform: translateY(-1px);
+      box-shadow: 0 4px 18px rgba(67,56,202,0.35);
+    }
+
+    .nav-hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; padding: 4px; background: none; border: none;
+    }
+    .nav-hamburger span {
+      display: block; width: 24px; height: 2px;
+      background: var(--text-primary); border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    .nav-drawer {
+      display: none; position: fixed; inset: 0;
+      background: rgba(8,8,15,0.97); z-index: 99;
+      flex-direction: column; align-items: center;
+      justify-content: center; gap: 2.5rem; padding: 2rem;
+    }
+    .nav-drawer.open { display: flex; }
+    .nav-drawer a {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 2.2rem; font-weight: 700; color: var(--white);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-drawer a:hover { color: #a5b4fc; }
+    .nav-drawer .drawer-cta {
+      font-size: 0.82rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--white); background: var(--indigo);
+      padding: 1rem 2.5rem; border-radius: 4px; margin-top: 0.5rem;
+    }
+    .drawer-close {
+      position: absolute; top: 1.5rem; right: 1.5rem;
+      background: none; border: none; color: rgba(244,245,255,0.35);
+      font-size: 1.8rem; cursor: pointer; line-height: 1;
+    }
+
+    /* ── HERO ── */
+    #hero {
+      position: relative; width: 100%; height: 100svh;
+      min-height: 560px; display: flex;
+      align-items: center; justify-content: center;
+      overflow: hidden; background: var(--dark);
+    }
+    #hero-fallback {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 90% 70% at 50% 50%, #1a1a3e 0%, var(--void) 70%);
+      z-index: 0;
+    }
+    #hero-bg-img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center 50%; z-index: 1;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,8,15,0.70) 0%,
+        rgba(8,8,15,0.38) 38%,
+        rgba(8,8,15,0.90) 100%
+      );
+      z-index: 2;
+    }
+    /* Dot matrix pattern */
+    .hero-dots {
+      position: absolute; inset: 0; z-index: 2;
+      background-image: radial-gradient(circle, rgba(67,56,202,0.15) 1px, transparent 1px);
+      background-size: 40px 40px; pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative; z-index: 3; text-align: center;
+      color: var(--white); max-width: 860px; padding: 0 1.5rem;
+    }
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem; font-weight: 400;
+      letter-spacing: 0.25em; text-transform: uppercase;
+      color: #a5b4fc; margin-bottom: 1.4rem;
+      opacity: 0; animation: fadeUp 1s 0.3s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    .hero-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(2.8rem, 8vw, 6.8rem);
+      font-weight: 700; line-height: 1.06;
+      letter-spacing: -0.025em; margin-bottom: 1.6rem;
+      opacity: 0; animation: fadeUp 1.1s 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    .hero-title .accent { color: #a5b4fc; }
+    .hero-sub {
+      font-size: clamp(0.92rem, 2.2vw, 1.05rem); font-weight: 300;
+      line-height: 1.78; color: rgba(244,245,255,0.65);
+      max-width: 520px; margin: 0 auto 2.2rem;
+      opacity: 0; animation: fadeUp 1.1s 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    .hero-actions {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+      opacity: 0; animation: fadeUp 1.1s 0.9s cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .btn-primary {
+      font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--white); background: var(--indigo);
+      border: none; padding: 0.95rem 2rem; border-radius: 4px;
+      cursor: pointer; text-decoration: none;
+      transition: background 0.25s, transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover {
+      background: var(--indigo-bright); transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(67,56,202,0.5);
+    }
+    .btn-ghost {
+      font-size: 0.78rem; font-weight: 400;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--white); background: transparent;
+      border: 1px solid rgba(244,245,255,0.28);
+      padding: 0.95rem 2rem; border-radius: 4px;
+      cursor: pointer; text-decoration: none;
+      transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    }
+    .btn-ghost:hover {
+      border-color: #a5b4fc; background: var(--indigo-glow); transform: translateY(-2px);
+    }
+    .hero-scroll-hint {
+      position: absolute; bottom: 2rem; left: 50%;
+      transform: translateX(-50%); z-index: 3;
+      display: flex; flex-direction: column; align-items: center; gap: 0.45rem;
+      color: rgba(244,245,255,0.3); font-size: 0.6rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      animation: scrollFloat 2.5s ease-in-out infinite;
+    }
+    @keyframes scrollFloat {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(7px); }
+    }
+    .scroll-line {
+      width: 1px; height: 36px;
+      background: linear-gradient(to bottom, rgba(67,56,202,0.8), transparent);
+    }
+
+    /* ── SECTION COMMON ── */
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--indigo-bright); margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      font-weight: 700; line-height: 1.12;
+      color: var(--text-primary); margin-bottom: 1.4rem;
+      letter-spacing: -0.02em;
+    }
+    .section-title em { font-style: normal; color: var(--indigo); }
+    .section-body {
+      font-size: 0.97rem; font-weight: 300;
+      line-height: 1.85; color: var(--text-muted); max-width: 520px;
+    }
+
+    /* ── THE PROBLEM ── */
+    #problem-wrap { padding: 6rem 4rem; background: #fff; }
+    #problem {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 5rem; align-items: center;
+      max-width: 1200px; margin: 0 auto;
+    }
+
+    /* comparison table */
+    .compare-stack { display: flex; flex-direction: column; gap: 1.5px; }
+    .compare-row {
+      display: grid; grid-template-columns: 1fr 80px 80px;
+      align-items: center; gap: 0.8rem;
+      padding: 1.1rem 1.4rem;
+      background: var(--offwhite);
+      border: 1px solid var(--cloud);
+    }
+    .compare-row.header {
+      background: var(--panel);
+      border-color: transparent;
+    }
+    .compare-row.header span {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(244,245,255,0.5); text-align: center;
+    }
+    .compare-row.header .col-label { color: rgba(244,245,255,0.5); text-align: left; }
+    .compare-feature { font-size: 0.83rem; font-weight: 400; color: var(--text-muted); }
+    .check { text-align: center; font-size: 1rem; }
+    .check.yes-pq { color: var(--indigo-bright); }
+    .check.yes-cls { color: #10b981; }
+    .check.no  { color: #d1d5db; }
+
+    .migration-callout {
+      background: linear-gradient(135deg, var(--indigo-dim) 0%, var(--dark) 100%);
+      border-radius: 4px; padding: 2.2rem;
+      margin-top: 1.5px; color: var(--white);
+    }
+    .migration-callout .big-word {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 3.2rem; font-weight: 700;
+      line-height: 1; color: #a5b4fc;
+      margin-bottom: 0.5rem; letter-spacing: -0.02em;
+    }
+    .migration-callout p {
+      font-size: 0.82rem; font-weight: 300;
+      color: rgba(244,245,255,0.62); line-height: 1.68;
+    }
+
+    /* ── CAPABILITIES ── */
+    #capabilities {
+      background: var(--dark); padding: 7rem 4rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .cap-inner { max-width: 1200px; margin: 0 auto; }
+    #capabilities .section-title { color: var(--white); }
+    #capabilities .section-title em { color: #a5b4fc; }
+    #capabilities .section-body { color: rgba(244,245,255,0.52); }
+    .cap-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2px; margin-top: 4rem;
+    }
+    .cap-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(67,56,202,0.12);
+      padding: 2.5rem 2rem;
+      transition: background 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .cap-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(to right, var(--indigo-dim), var(--indigo-bright));
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.4s cubic-bezier(0.22,1,0.36,1);
+    }
+    .cap-card:hover::before { transform: scaleX(1); }
+    .cap-card:hover { background: rgba(67,56,202,0.06); }
+    .cap-alg {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.14em; color: #a5b4fc;
+      display: block; margin-bottom: 1rem;
+    }
+    .cap-card h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.25rem; font-weight: 700;
+      margin-bottom: 0.8rem; color: var(--white);
+    }
+    .cap-card p {
+      font-size: 0.86rem; font-weight: 300;
+      line-height: 1.75; color: rgba(244,245,255,0.5);
+    }
+
+    /* ── HOW IT WORKS ── */
+    #how-wrap { padding: 7rem 4rem; background: var(--white); }
+    #how {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 5rem; align-items: center;
+    }
+    .flow-steps { display: flex; flex-direction: column; gap: 0; }
+    .flow-step {
+      display: grid; grid-template-columns: 48px 1fr;
+      gap: 1.2rem; padding: 1.4rem 0;
+      border-bottom: 1px solid var(--cloud); align-items: start;
+    }
+    .flow-step:first-child { border-top: 1px solid var(--cloud); }
+    .flow-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--indigo-glow); border: 1px solid rgba(67,56,202,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem; font-weight: 700; color: var(--indigo-bright);
+      flex-shrink: 0; margin-top: 0.1rem;
+    }
+    .flow-body h4 {
+      font-size: 0.9rem; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 0.25rem;
+    }
+    .flow-body p {
+      font-size: 0.79rem; font-weight: 300;
+      color: var(--text-muted); line-height: 1.62;
+    }
+    .flow-kpis { display: flex; gap: 2rem; margin-top: 2rem; flex-wrap: wrap; }
+    .flow-kpi { flex: 1; min-width: 100px; text-align: center; }
+    .flow-kpi-num {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 2.4rem; font-weight: 700;
+      color: var(--indigo); line-height: 1; letter-spacing: -0.02em;
+    }
+    .flow-kpi-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-soft); margin-top: 0.35rem;
+    }
+    .flow-divider { width: 1px; background: var(--cloud); align-self: stretch; }
+
+    /* ── SECTORS ── */
+    #sectors {
+      background: linear-gradient(135deg, var(--indigo-dim) 0%, var(--void) 100%);
+      padding: 7rem 4rem; text-align: center; color: var(--white);
+    }
+    #sectors .section-label { color: #a5b4fc; }
+    #sectors .section-title { color: var(--white); margin: 0 auto 1.4rem; }
+    #sectors .section-title em { color: #a5b4fc; }
+    #sectors .section-body { color: rgba(244,245,255,0.58); margin: 0 auto 3.5rem; text-align: center; }
+    .sectors-grid {
+      display: flex; justify-content: center; flex-wrap: wrap;
+      gap: 1rem; max-width: 860px; margin: 0 auto;
+    }
+    .sector-tag {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(165,180,252,0.2);
+      color: rgba(244,245,255,0.72);
+      font-size: 0.8rem; letter-spacing: 0.06em;
+      padding: 0.65rem 1.3rem; border-radius: 4px;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .sector-tag:hover {
+      background: rgba(67,56,202,0.18);
+      border-color: #a5b4fc; color: #a5b4fc;
+    }
+
+    /* ── CTA ── */
+    #cta-section {
+      background: var(--offwhite); text-align: center; padding: 7rem 2rem;
+    }
+    #cta-section .section-title { margin: 0 auto 1rem; }
+    #cta-section .section-body  { margin: 0 auto 2.5rem; text-align: center; }
+    .waitlist-form {
+      display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;
+    }
+    .waitlist-form input {
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem;
+      padding: 0.95rem 1.4rem; border: 1px solid var(--mist);
+      border-radius: 4px; width: 280px; max-width: 100%; outline: none;
+      color: var(--text-primary); background: #fff; transition: border-color 0.2s;
+    }
+    .waitlist-form input:focus { border-color: var(--indigo); }
+
+    /* ── FOOTER ── */
+    footer { background: var(--void); padding: 4rem 4rem 3rem; }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+    }
+    .footer-brand .nav-logo { color: var(--white); display: block; margin-bottom: 1rem; }
+    footer p, footer a {
+      font-size: 0.79rem; font-weight: 300; line-height: 1.85;
+      color: rgba(244,245,255,0.36); text-decoration: none;
+    }
+    footer a:hover { color: #a5b4fc; }
+    .footer-col h4 {
+      font-size: 0.65rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(244,245,255,0.45); margin-bottom: 1rem;
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 0.35rem; }
+    .footer-bottom {
+      max-width: 1200px; margin: 2.5rem auto 0;
+      border-top: 1px solid rgba(255,255,255,0.07); padding-top: 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.72rem; flex-wrap: wrap; gap: 0.5rem;
+    }
+
+    .fade-up {
+      opacity: 0; transform: translateY(22px);
+      transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1);
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 1024px) {
+      nav { padding: 1.1rem 2rem; }
+      #problem-wrap, #how-wrap, #capabilities, #sectors { padding: 5rem 2rem; }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+    }
+    @media (max-width: 768px) {
+      .nav-links, .nav-cta { display: none; }
+      .nav-hamburger { display: flex; }
+      nav { padding: 1rem 1.5rem; }
+      #hero { min-height: 500px; }
+      .hero-scroll-hint { display: none; }
+      #problem { grid-template-columns: 1fr; gap: 3rem; }
+      #how      { grid-template-columns: 1fr; gap: 3rem; }
+      .cap-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .footer-inner { grid-template-columns: 1fr; }
+      .hero-actions { flex-direction: column; align-items: center; }
+      .btn-primary, .btn-ghost { width: 100%; max-width: 300px; text-align: center; }
+      .waitlist-form { flex-direction: column; align-items: center; }
+      .waitlist-form input { width: 100%; max-width: 320px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="offer-banner">
+    pqlogin.com is available for acquisition.&ensp;·&ensp;
+    <a href="https://hacklb.com" target="_blank" rel="noopener noreferrer">Browse our domain portfolio →</a>
+  </div>
+
+  <nav id="main-nav">
+    <a class="nav-logo" href="/"><span class="pq">PQ</span>Login</a>
+    <ul class="nav-links">
+      <li><a href="#problem-wrap">The Problem</a></li>
+      <li><a href="#capabilities">Platform</a></li>
+      <li><a href="#how-wrap">How It Works</a></li>
+    </ul>
+    <a class="nav-cta" href="#cta-section">Get Early Access</a>
+    <button class="nav-hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="nav-drawer" id="nav-drawer" role="dialog" aria-label="Navigation menu">
+    <button class="drawer-close" id="drawer-close" aria-label="Close menu">✕</button>
+    <a href="#problem-wrap"  onclick="closeDrawer()">The Problem</a>
+    <a href="#capabilities"  onclick="closeDrawer()">Platform</a>
+    <a href="#how-wrap"      onclick="closeDrawer()">How It Works</a>
+    <a href="#cta-section"   onclick="closeDrawer()" class="drawer-cta">Get Early Access</a>
+  </div>
+
+  <section id="hero" aria-label="PQ Login — Authentication for the Post-Quantum World">
+    <div id="hero-fallback"></div>
+    <img
+      id="hero-bg-img"
+      src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1800&q=80&auto=format&fit=crop"
+      alt="Abstract network security visualization representing post-quantum cryptographic authentication"
+    />
+    <div class="hero-overlay"></div>
+    <div class="hero-dots"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Post-Quantum Authentication Layer</p>
+      <h1 class="hero-title">Every password<br>will be <span class="accent">broken.</span><br>Not yours.</h1>
+      <p class="hero-sub">When quantum computers arrive, every classical cryptographic token, session key, and password hash becomes trivially reversible. PQ Login is the drop-in authentication layer that makes your stack quantum-proof — today.</p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="#cta-section">Get Early Access</a>
+        <a class="btn-ghost"   href="#problem-wrap">The Problem</a>
+      </div>
+    </div>
+    <div class="hero-scroll-hint" aria-hidden="true">
+      <div class="scroll-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <div id="problem-wrap">
+    <section id="problem">
+      <div class="fade-up">
+        <p class="section-label">Why Migrate Now</p>
+        <h2 class="section-title">Classical auth has<br>an <em>expiry date</em></h2>
+        <p class="section-body">RSA, ECC, and ECDSA — the cryptography underpinning every login flow in the world — are mathematically broken by a sufficiently powerful quantum computer running Shor's algorithm. The migration window is measured in years, not decades.</p>
+      </div>
+      <div class="fade-up" style="transition-delay:0.1s;">
+        <div class="compare-stack">
+          <div class="compare-row header">
+            <span class="col-label">Feature</span>
+            <span>Classical</span>
+            <span>PQ Login</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-feature">Quantum-resistant key exchange</span>
+            <span class="check no">✗</span>
+            <span class="check yes-pq">✓</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-feature">Harvest-now proof</span>
+            <span class="check no">✗</span>
+            <span class="check yes-pq">✓</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-feature">NIST FIPS 203/204/205 aligned</span>
+            <span class="check no">✗</span>
+            <span class="check yes-pq">✓</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-feature">Drop-in SDK integration</span>
+            <span class="check yes-cls">✓</span>
+            <span class="check yes-pq">✓</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-feature">Hybrid classical + PQ mode</span>
+            <span class="check no">✗</span>
+            <span class="check yes-pq">✓</span>
+          </div>
+          <div class="compare-row">
+            <span class="compare-feature">Future-proof for 30+ years</span>
+            <span class="check no">✗</span>
+            <span class="check yes-pq">✓</span>
+          </div>
+        </div>
+        <div class="migration-callout">
+          <div class="big-word">Migrate<br>before Y2Q.</div>
+          <p>Y2Q — Years to Quantum — is the countdown the security community is running. PQ Login gives you the runway to migrate on your schedule, not the adversary's.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section id="capabilities" aria-label="PQ Login Platform">
+    <div class="cap-inner">
+      <div class="fade-up" style="max-width:600px;">
+        <p class="section-label">The Platform</p>
+        <h2 class="section-title">NIST-standardised.<br><em>Drop-in ready.</em></h2>
+        <p class="section-body">PQ Login implements FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), and FIPS 205 (SLH-DSA) across every authentication primitive — from the initial handshake to the session token lifecycle.</p>
+      </div>
+      <div class="cap-grid">
+        <article class="cap-card fade-up">
+          <span class="cap-alg">ML-KEM · FIPS 203</span>
+          <h3>Quantum-Safe Session Keys</h3>
+          <p>Key encapsulation for every login session using Module-Lattice-based Key Encapsulation Mechanism. Replaces ECDH with zero API changes.</p>
+        </article>
+        <article class="cap-card fade-up" style="transition-delay:0.1s">
+          <span class="cap-alg">ML-DSA · FIPS 204</span>
+          <h3>PQ Digital Signatures</h3>
+          <p>Module-Lattice digital signatures for token signing and identity attestation. Every JWT, SAML assertion, and identity proof quantum-hardened.</p>
+        </article>
+        <article class="cap-card fade-up" style="transition-delay:0.2s">
+          <span class="cap-alg">SLH-DSA · FIPS 205</span>
+          <h3>Hash-Based Audit Proofs</h3>
+          <p>Stateless hash-based signatures for audit logs and compliance records — provably secure under minimal assumptions.</p>
+        </article>
+        <article class="cap-card fade-up" style="transition-delay:0.05s">
+          <span class="cap-alg">Hybrid Mode</span>
+          <h3>Zero-Disruption Migration</h3>
+          <p>Run classical ECDSA alongside ML-DSA during migration. Your existing integrations continue working. Quantum protection activates immediately.</p>
+        </article>
+        <article class="cap-card fade-up" style="transition-delay:0.15s">
+          <span class="cap-alg">SDK · API</span>
+          <h3>Drop-In Integration</h3>
+          <p>PQ Login SDKs for JavaScript, Python, Go, Java, and Rust. OpenID Connect and OAuth 2.1 compliant. Migrate in hours, not months.</p>
+        </article>
+        <article class="cap-card fade-up" style="transition-delay:0.25s">
+          <span class="cap-alg">Compliance</span>
+          <h3>CNSA 2.0 &amp; BSI Ready</h3>
+          <p>Aligned with NSA CNSA 2.0 and Germany's BSI post-quantum migration guidance. Audit-ready documentation for every regulatory framework.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div id="how-wrap">
+    <section id="how">
+      <div class="fade-up">
+        <p class="section-label">Integration</p>
+        <h2 class="section-title">Quantum-safe<br>in <em>four steps</em></h2>
+        <p class="section-body" style="margin-bottom:2rem;">PQ Login is designed to migrate your existing authentication stack with the least possible disruption. Add quantum resistance without rewriting your product.</p>
+        <div class="flow-kpis">
+          <div class="flow-kpi">
+            <div class="flow-kpi-num">&lt;1 day</div>
+            <div class="flow-kpi-label">Time to integrate</div>
+          </div>
+          <div class="flow-divider"></div>
+          <div class="flow-kpi">
+            <div class="flow-kpi-num">0</div>
+            <div class="flow-kpi-label">Breaking changes</div>
+          </div>
+          <div class="flow-divider"></div>
+          <div class="flow-kpi">
+            <div class="flow-kpi-num">30 yr</div>
+            <div class="flow-kpi-label">Security horizon</div>
+          </div>
+        </div>
+      </div>
+      <div class="fade-up" style="transition-delay:0.12s;">
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-num">1</div>
+            <div class="flow-body">
+              <h4>Install the SDK</h4>
+              <p>Add the PQ Login SDK to your stack. Available via npm, pip, Maven, and go get. No infrastructure changes required.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-body">
+              <h4>Enable Hybrid Mode</h4>
+              <p>Toggle hybrid mode — classical and PQ algorithms run in parallel. Existing users remain unaffected. New sessions are immediately quantum-safe.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-body">
+              <h4>Migrate Sessions</h4>
+              <p>Use the migration dashboard to roll over existing sessions to PQ credentials on your timeline. Gradual or immediate — your choice.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">4</div>
+            <div class="flow-body">
+              <h4>Deprecate Classical</h4>
+              <p>Once migration is complete, disable classical crypto entirely. Your entire authentication flow is now quantum-resistant.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section id="sectors" aria-label="Sectors PQ Login Serves">
+    <p class="section-label">Who Needs PQ Login</p>
+    <h2 class="section-title">Every organisation with<br>a <em>login button</em></h2>
+    <p class="section-body">If you authenticate users, machines, or services, you are exposed to the quantum threat. PQ Login is the migration path.</p>
+    <div class="sectors-grid fade-up">
+      <span class="sector-tag">Banking &amp; Financial Services</span>
+      <span class="sector-tag">Healthcare &amp; EHR Systems</span>
+      <span class="sector-tag">Government &amp; Defence</span>
+      <span class="sector-tag">SaaS &amp; Cloud Platforms</span>
+      <span class="sector-tag">Critical Infrastructure</span>
+      <span class="sector-tag">Enterprise IAM</span>
+      <span class="sector-tag">Blockchain &amp; Web3</span>
+      <span class="sector-tag">Telecoms &amp; ISPs</span>
+      <span class="sector-tag">Legal &amp; Compliance</span>
+    </div>
+  </section>
+
+  <section id="cta-section" aria-label="Get Early Access">
+    <p class="section-label">Migrate Today</p>
+    <h2 class="section-title" style="max-width:560px; margin:0 auto 1rem;">Your authentication<br>stack needs to be <em>quantum-ready.</em></h2>
+    <p class="section-body">Join the PQ Login early access programme. Migrate your first application to post-quantum authentication and sleep easier knowing the quantum threat is covered.</p>
+    <form class="waitlist-form" onsubmit="handleWaitlist(event)">
+      <input type="email" id="email-input" placeholder="you@company.com" required />
+      <button type="submit" class="btn-primary">Get Early Access</button>
+    </form>
+    <p id="waitlist-msg" style="margin-top:1.2rem; font-size:0.84rem; color:var(--indigo-bright); min-height:1.2em;"></p>
+    <p style="font-size:0.72rem; color:var(--text-soft); margin-top:0.5rem;">No spam. Unsubscribe anytime.</p>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a class="nav-logo" href="/"><span style="color:#a5b4fc">PQ</span>Login</a>
+        <p>Post-quantum authentication.<br>Drop-in ready. Future-proof. NIST-aligned.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Architecture</a></li>
+          <li><a href="#">NIST Compliance</a></li>
+          <li><a href="#">Migration Guide</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Developers</h4>
+        <ul>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">SDK Downloads</a></li>
+          <li><a href="#">API Reference</a></li>
+          <li><a href="#">Status</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Use</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 PQLogin. All rights reserved.</p>
+      <p>pqlogin.com — authentication for the quantum era.</p>
+    </div>
+  </footer>
+
+  <script>
+    var hamburger = document.getElementById('hamburger');
+    var drawer = document.getElementById('nav-drawer');
+    var drawerClose = document.getElementById('drawer-close');
+    hamburger.addEventListener('click', function () {
+      var isOpen = drawer.classList.toggle('open');
+      hamburger.classList.toggle('open', isOpen);
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    });
+    drawerClose.addEventListener('click', closeDrawer);
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      hamburger.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
+    window.addEventListener('scroll', function () {
+      document.getElementById('main-nav').classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-up').forEach(function (el) { observer.observe(el); });
+    function handleWaitlist(e) {
+      e.preventDefault();
+      document.getElementById('waitlist-msg').textContent = '✓ You\'re on the list. We\'ll be in touch before launch.';
+      document.getElementById('email-input').value = '';
+    }
+  </script>
+</body>
+</html>
